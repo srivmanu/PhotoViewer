@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,6 +12,7 @@ import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,6 +33,7 @@ public class ImageItemFragment extends Fragment {
     private OnListFragmentInteractionListener mListener;
     private ImageItemAdapter mAdapter;
     private AtomicIntegerArray list;
+    private ProgressBar progressBar;
 
     public ImageItemFragment() {
     }
@@ -59,11 +62,12 @@ public class ImageItemFragment extends Fragment {
 
         Context context;
         RecyclerView recyclerView;
-        ((ApplicationClass)getContext().getApplicationContext()).initializeList();
+        ((ApplicationClass) getContext().getApplicationContext()).initializeList();
         setupImageListMain(10); //test
 
         context = view.getContext();
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
+        progressBar = (ProgressBar) view.findViewById(R.id.progress_bar);
         if (mColumnCount <= 1) {
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
         } else {
@@ -71,8 +75,28 @@ public class ImageItemFragment extends Fragment {
         }
         mAdapter = new ImageItemAdapter(getImageListMain(), mListener, getImageSize(mColumnCount)); // item list
         recyclerView.setAdapter(mAdapter);
+        recyclerView.addOnScrollListener(new EndlessRecyclerOnScrollListener() {
+            @Override
+            public void onLoadMore() {
+                getMoreListItems();
+            }
+        });
 
         return view;
+    }
+
+    private void getMoreListItems() {
+        progressBar.setVisibility(View.VISIBLE);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i <= 30; i++) {
+                    getImageListMain().addAll(getItemListFromJSON());
+                }
+                mAdapter.notifyDataSetChanged();
+                progressBar.setVisibility(View.GONE);
+            }
+        }, 10000);
     }
 
     private int getImageSize(int mColumnCount) {
@@ -80,19 +104,28 @@ public class ImageItemFragment extends Fragment {
     }
 
     private void setupImageListMain(int numberOfItems) {
+
+        getImageListMain().addAll(getItemListFromJSON());
+
+    }
+
+    public ArrayList<ImageItem> getItemListFromJSON() {
         ImageItem item;
+        ArrayList<ImageItem> items = new ArrayList<>();
         try {
             JSONArray objects = loadJsonfromAssets().getJSONArray("images");
 
-            for (int i = 0; i < numberOfItems; i++) {
+            for (int i = 0; i < 10; i++) {
                 JSONObject jsonItem = objects.getJSONObject(i);
                 item = new ImageItem(jsonItem);
-                getImageListMain().add(item);
+                items.add(item);
             }
         } catch (JSONException e) {
             e.printStackTrace();
             if (DEBUG) i("TAG", "ERROR IN JSON PARSE : setupImageListMain");
+            return null;
         }
+        return items;
     }
 
     private JSONObject loadJsonfromAssets() {
@@ -167,7 +200,7 @@ public class ImageItemFragment extends Fragment {
     }
 
     public ArrayList<ImageItem> getImageListMain() {
-        return ((ApplicationClass)getContext().getApplicationContext()).getList();
+        return ((ApplicationClass) getContext().getApplicationContext()).getList();
     }
 
     public interface OnListFragmentInteractionListener {
