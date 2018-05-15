@@ -1,42 +1,40 @@
 package com.smartprix.photoviewer;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.smartprix.photoviewer.dummy.DummyContent;
-import com.smartprix.photoviewer.dummy.DummyContent.DummyItem;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
-/**
- * A fragment representing a list of Items.
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
- * interface.
- */
+import static android.util.Log.i;
+import static com.smartprix.photoviewer.BuildConfig.DEBUG;
+
 public class ImageItemFragment extends Fragment {
 
-    // TODO: Customize parameter argument names
-    private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
+    private static final String ARG_COLUMN_COUNT = "ARG_COLUMN_COUNT";
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
+    private ImageItemAdapter mAdapter;
+    private AtomicIntegerArray list;
 
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
     public ImageItemFragment() {
     }
 
-    // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
     public static ImageItemFragment newInstance(int columnCount) {
         ImageItemFragment fragment = new ImageItemFragment();
@@ -49,7 +47,6 @@ public class ImageItemFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
@@ -60,18 +57,74 @@ public class ImageItemFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_list, container, false);
 
-        // Set the adapter
-        if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-            recyclerView.setAdapter(new ImageItemAdapter(DummyContent.ITEMS, mListener));
+        Context context;
+        RecyclerView recyclerView;
+        ((ApplicationClass)getContext().getApplicationContext()).initializeList();
+        setupImageListMain(10); //test
+
+        context = view.getContext();
+        recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
+        if (mColumnCount <= 1) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
+        mAdapter = new ImageItemAdapter(getImageListMain(), mListener, getImageSize(mColumnCount)); // item list
+        recyclerView.setAdapter(mAdapter);
+
         return view;
+    }
+
+    private int getImageSize(int mColumnCount) {
+        return getScreenWidth() / mColumnCount;
+    }
+
+    private void setupImageListMain(int numberOfItems) {
+        ImageItem item;
+        try {
+            JSONArray objects = loadJsonfromAssets().getJSONArray("images");
+
+            for (int i = 0; i < numberOfItems; i++) {
+                JSONObject jsonItem = objects.getJSONObject(i);
+                item = new ImageItem(jsonItem);
+                getImageListMain().add(item);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            if (DEBUG) i("TAG", "ERROR IN JSON PARSE : setupImageListMain");
+        }
+    }
+
+    private JSONObject loadJsonfromAssets() {
+        String jsonString = null;
+        JSONObject json = null;
+        try {
+            InputStream is = getContext().getAssets().open("list.json");
+
+            int size = is.available();
+
+            byte[] buffer = new byte[size];
+
+            is.read(buffer);
+
+            is.close();
+
+            jsonString = new String(buffer, "UTF-8");
+
+            json = new JSONObject(jsonString);
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            if (DEBUG) i("TAG", "IO ERROR");
+            return null;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            if (DEBUG) i("TAG", "ERROR in JSONParse");
+            return null;
+        }
+
+        return json;
+
     }
 
 
@@ -92,18 +145,32 @@ public class ImageItemFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+    public int getScreenWidth() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        ((Activity) getContext()).getWindowManager()
+                .getDefaultDisplay()
+                .getMetrics(displayMetrics);
+        int width = displayMetrics.widthPixels;
+        return width;
+    }
+
+    public void refreshList() {
+        if (DEBUG) i("TAG", "in refreshList");
+        logList();
+        mAdapter.notifyDataSetChanged();
+    }
+
+    private void logList() {
+        for (ImageItem item : getImageListMain()) {
+            if (DEBUG) i("TAG", "Item : " + item.description() + "\nLIKED : " + item.getLiked());
+        }
+    }
+
+    public ArrayList<ImageItem> getImageListMain() {
+        return ((ApplicationClass)getContext().getApplicationContext()).getList();
+    }
+
     public interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction(ArrayList<ImageItem> items, int position);
     }
 }

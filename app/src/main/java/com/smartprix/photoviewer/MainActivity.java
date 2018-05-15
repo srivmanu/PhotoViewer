@@ -1,44 +1,51 @@
 package com.smartprix.photoviewer;
 
+import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
-import android.view.MenuItem;
-import android.widget.TextView;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.ArrayList;
+import java.util.List;
 
-    private TextView mTextMessage;
+import static com.smartprix.photoviewer.BuildConfig.DEBUG;
 
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
-            = new BottomNavigationView.OnNavigationItemSelectedListener() {
+public class MainActivity extends AppCompatActivity implements ImageItemFragment.OnListFragmentInteractionListener {
 
-        @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.navigation_home:
-                    mTextMessage.setText(R.string.title_home);
-                    return true;
-                case R.id.navigation_dashboard:
-                    mTextMessage.setText(R.string.title_dashboard);
-                    return true;
-                case R.id.navigation_notifications:
-                    mTextMessage.setText(R.string.title_notifications);
-                    return true;
-            }
-            return false;
-        }
-    };
+
+    private Fragment currentFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mTextMessage = (TextView) findViewById(R.id.message);
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        setupFragments();
     }
 
+    private void setupFragments() {
+        currentFragment = ImageItemFragment.newInstance(2);
+        getFragmentManager().beginTransaction().add(R.id.fragment, currentFragment).commit();
+    }
+
+    @Override
+    public void onListFragmentInteraction(ArrayList<ImageItem> items, int position) {
+        if (DEBUG) Log.i("TAG", "ITEM DETAILS : \n" + items.get(position).description());
+        Intent intent = new Intent();
+        intent.setClass(this, ScrollingActivity.class);
+        intent.putExtra("list",items);
+        intent.putExtra("position", position);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ((ImageItemFragment) currentFragment).refreshList();
+    }
+
+    public void setLiked(int position,boolean liked) {
+        ((ImageItemFragment)currentFragment).getImageListMain().get(position).setLiked(liked);
+    }
 }

@@ -1,0 +1,74 @@
+{
+  "images": [
+    {
+      "url": "https://psarips.com/wp-content/uploads/2018/05/safe-720x340.jpg",
+      "height": 400,
+      "title": "SAFE",
+      "tags": "netflix,series,safe",
+      "width": 400
+    },
+    {
+      "url": "https://psarips.com/wp-content/uploads/2017/10/supergirls3.jpg",
+      "height": 400,
+      "title": "SuperGirl",
+      "tags": "superhero,series,supergirl",
+      "width": 400
+    },
+    {
+      "url": "https://psarips.com/wp-content/uploads/2018/05/elementys6.jpg",
+      "height": 400,
+      "title": "Elementary",
+      "tags": "Sherlock,series,Elementary",
+      "width": 400
+    },
+    {
+      "url": "https://psarips.com/wp-content/uploads/2014/12/brooklyn.jpg",
+      "height": 400,
+      "title": "Brooklyn 99",
+      "tags": "cops,series,brooklyn-99",
+      "width": 400
+    },
+    {
+      "url": "https://psarips.com/wp-content/uploads/2015/01/the-simpsons.jpg",
+      "height": 400,
+      "title": "The Simpsons",
+      "tags": "animated,series,the-simpsons",
+      "width": 400
+    },
+    {
+      "url": "https://psarips.com/wp-content/uploads/2016/10/westworld.jpg",
+      "height": 400,
+      "width": 400,
+      "title": "Westworld",
+      "tags": "HBO,series,westworld"
+    },
+    {
+      "url": "https://psarips.com/wp-content/uploads/2015/04/siliconvalley14.jpg",
+      "height": 400,
+      "width": 400,
+      "title": "Silicon Valley",
+      "tags": "nerds,series,silicon-valley"
+    },
+    {
+      "url": "https://psarips.com/wp-content/uploads/2016/09/lucifer.jpg",
+      "height": 400,
+      "width": 400,
+      "title": "Lucifer",
+      "tags": "superhero,series,lucifer"
+    },
+    {
+      "url": "https://psarips.com/wp-content/uploads/2017/05/shield-s5.jpg",
+      "height": 400,
+      "width": 400,
+      "title": "Agents of SHIELD",
+      "tags": "superhero,series,aos"
+    },
+    {
+      "url": "https://psarips.com/wp-content/uploads/2017/06/gotham-s4.jpg  ",
+      "height": 400,
+      "width": 400,
+      "title": "Gotham",
+      "tags": "superhero,series,gotham"
+    }
+  ]
+}
